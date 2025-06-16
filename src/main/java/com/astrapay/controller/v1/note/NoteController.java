@@ -1,6 +1,7 @@
 package com.astrapay.controller.v1.note;
 
 import com.astrapay.dto.ApiResponse;
+import com.astrapay.dto.NoteDto;
 import com.astrapay.entity.Note;
 import com.astrapay.exception.NoteExistsException;
 import com.astrapay.service.NoteService;
@@ -21,10 +22,10 @@ public class NoteController {
     private final NoteService noteService;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<Note>>> getAllNotes() {
+    public ResponseEntity<ApiResponse<List<NoteDto>>> getAllNotes() {
         try {
             List<Note> notes = noteService.getAllNotes();
-            return ResponseEntity.ok(ApiResponse.success("Notes retrieved successfully", notes));
+            return ResponseEntity.ok(ApiResponse.success("Notes retrieved successfully", NoteDto.fromEntities(notes)));
         } catch (Exception e) {
             log.error("Error retrieving notes: ", e);
             return ResponseEntity.internalServerError()
@@ -33,11 +34,11 @@ public class NoteController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<Note>> getNoteById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<NoteDto>> getNoteById(@PathVariable Long id) {
         try {
             Note note = noteService.getNoteById(id);
             if (note != null) {
-                return ResponseEntity.ok(ApiResponse.success("Note retrieved successfully", note));
+                return ResponseEntity.ok(ApiResponse.success("Note retrieved successfully", NoteDto.fromEntity(note)));
             }
             return ResponseEntity.ok(ApiResponse.notFound("Note not found with id: " + id));
         } catch (Exception e) {
@@ -48,10 +49,10 @@ public class NoteController {
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<Note>> createNote(@RequestBody Note note) {
+    public ResponseEntity<ApiResponse<NoteDto>> createNote(@RequestBody NoteDto noteDto) {
         try {
-            Note createdNote = noteService.createNote(note.getTitle(), note.getContent());
-            return ResponseEntity.ok(ApiResponse.success("Note created successfully", createdNote));
+            Note note = noteService.createNote(noteDto.getTitle(), noteDto.getContent());
+            return ResponseEntity.ok(ApiResponse.success("Note created successfully", NoteDto.fromEntity(note)));
         } catch (NoteExistsException e) {
             log.warn("Note creation conflict: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.CONFLICT)
@@ -64,11 +65,12 @@ public class NoteController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<Note>> updateNote(@PathVariable Long id, @RequestBody Note note) {
+    public ResponseEntity<ApiResponse<NoteDto>> updateNote(@PathVariable Long id, @RequestBody NoteDto noteDto) {
         try {
-            Note updatedNote = noteService.updateNote(id, note.getTitle(), note.getContent());
+            Note updatedNote = noteService.updateNote(id, noteDto.getTitle(), noteDto.getContent());
             if (updatedNote != null) {
-                return ResponseEntity.ok(ApiResponse.success("Note updated successfully", updatedNote));
+                return ResponseEntity
+                        .ok(ApiResponse.success("Note updated successfully", NoteDto.fromEntity(updatedNote)));
             }
             return ResponseEntity.ok(ApiResponse.notFound("Note not found with id: " + id));
         } catch (NoteExistsException e) {
