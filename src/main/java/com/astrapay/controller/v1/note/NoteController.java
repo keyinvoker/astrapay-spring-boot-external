@@ -7,7 +7,6 @@ import com.astrapay.exception.NoteExistsException;
 import com.astrapay.service.NoteService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,11 +24,10 @@ public class NoteController {
     public ResponseEntity<ApiResponse<List<NoteDto>>> getAllNotes() {
         try {
             List<Note> notes = noteService.getAllNotes();
-            return ResponseEntity.ok(ApiResponse.success("Notes retrieved successfully", NoteDto.fromEntities(notes)));
+            return ApiResponse.ok("Notes retrieved successfully", NoteDto.fromEntities(notes));
         } catch (Exception e) {
             log.error("Error retrieving notes: ", e);
-            return ResponseEntity.internalServerError()
-                    .body(ApiResponse.error(500, "Failed to retrieve notes: " + e.getMessage()));
+            return ApiResponse.internalServerError("Failed to retrieve notes: " + e.getMessage());
         }
     }
 
@@ -38,13 +36,12 @@ public class NoteController {
         try {
             Note note = noteService.getNoteById(id);
             if (note != null) {
-                return ResponseEntity.ok(ApiResponse.success("Note retrieved successfully", NoteDto.fromEntity(note)));
+                return ApiResponse.ok("Note retrieved successfully", NoteDto.fromEntity(note));
             }
-            return ResponseEntity.ok(ApiResponse.notFound("Note not found with id: " + id));
+            return ApiResponse.notFound("Note not found with id: " + id);
         } catch (Exception e) {
             log.error("Error retrieving note: ", e);
-            return ResponseEntity.internalServerError()
-                    .body(ApiResponse.error(500, "Failed to retrieve note: " + e.getMessage()));
+            return ApiResponse.internalServerError("Failed to retrieve note: " + e.getMessage());
         }
     }
 
@@ -52,15 +49,13 @@ public class NoteController {
     public ResponseEntity<ApiResponse<NoteDto>> createNote(@RequestBody NoteDto noteDto) {
         try {
             Note note = noteService.createNote(noteDto.getTitle(), noteDto.getContent());
-            return ResponseEntity.ok(ApiResponse.success("Note created successfully", NoteDto.fromEntity(note)));
+            return ApiResponse.ok("Note created successfully", NoteDto.fromEntity(note));
         } catch (NoteExistsException e) {
             log.warn("Note creation conflict: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(ApiResponse.error(409, e.getMessage()));
+            return ApiResponse.conflict(e.getMessage());
         } catch (Exception e) {
             log.error("Error creating note: ", e);
-            return ResponseEntity.internalServerError()
-                    .body(ApiResponse.error(500, "Failed to create note: " + e.getMessage()));
+            return ApiResponse.internalServerError("Failed to create note: " + e.getMessage());
         }
     }
 
@@ -69,18 +64,15 @@ public class NoteController {
         try {
             Note updatedNote = noteService.updateNote(id, noteDto.getTitle(), noteDto.getContent());
             if (updatedNote != null) {
-                return ResponseEntity
-                        .ok(ApiResponse.success("Note updated successfully", NoteDto.fromEntity(updatedNote)));
+                return ApiResponse.ok("Note updated successfully", NoteDto.fromEntity(updatedNote));
             }
-            return ResponseEntity.ok(ApiResponse.notFound("Note not found with id: " + id));
+            return ApiResponse.notFound("Note not found with id: " + id);
         } catch (NoteExistsException e) {
             log.warn("Note update conflict: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(ApiResponse.error(409, e.getMessage()));
+            return ApiResponse.conflict(e.getMessage());
         } catch (Exception e) {
             log.error("Error updating note: ", e);
-            return ResponseEntity.internalServerError()
-                    .body(ApiResponse.error(500, "Failed to update note: " + e.getMessage()));
+            return ApiResponse.internalServerError("Failed to update note: " + e.getMessage());
         }
     }
 
@@ -88,11 +80,10 @@ public class NoteController {
     public ResponseEntity<ApiResponse<Void>> deleteNote(@PathVariable Long id) {
         try {
             noteService.deleteNote(id);
-            return ResponseEntity.ok(ApiResponse.success("Note deleted successfully", null));
+            return ApiResponse.ok("Note deleted successfully", null);
         } catch (Exception e) {
             log.error("Error deleting note: ", e);
-            return ResponseEntity.internalServerError()
-                    .body(ApiResponse.error(500, "Failed to delete note: " + e.getMessage()));
+            return ApiResponse.internalServerError("Failed to delete note: " + e.getMessage());
         }
     }
 }
