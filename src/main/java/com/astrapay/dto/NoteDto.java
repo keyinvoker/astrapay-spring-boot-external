@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -13,11 +14,16 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class NoteDto {
     private Long id;
+    private LocalDateTime createdAt;
     private String title;
     private String content;
 
     public static NoteDto fromEntity(Note note) {
-        return new NoteDto(note.getId(), note.getTitle(), note.getContent());
+        return new NoteDto(
+                note.getId(),
+                note.getCreatedAt(),
+                note.getTitle(),
+                note.getContent());
     }
 
     public static List<NoteDto> fromEntities(List<Note> notes) {
